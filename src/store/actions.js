@@ -11,7 +11,7 @@ import {
   reqAddress,
   reqFoodCategories,
   reqShops
-} from '../api'
+} from '../api/index'
 
 export default {
   //异步获取地址
@@ -38,7 +38,8 @@ export default {
   //异步获取商家列表
   async getShops({commit, state}){
     //发送异步ajax请求
-    const result = await reqShops(state.latitude, state.longitude)
+    const {longitude, latitude} = state
+    const result = await reqShops(longitude, latitude)
     //提交一个mutation
     if(result.code === 0){
       const shops = result.data
