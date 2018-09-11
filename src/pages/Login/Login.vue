@@ -9,7 +9,7 @@
         </div>
       </div>
       <div class="login_content">
-        <form>
+        <form @submit.prevent="login">
           <div :class="{on: loginWay}">
             <section class="login_message">
               <input type="tel" maxlength="11" placeholder="手机号" v-model="phone">
@@ -20,7 +20,7 @@
               >{{computeTime?`已发送(${computeTime})`:'获取验证码'}}</button>
             </section>
             <section class="login_verification">
-              <input type="tel" maxlength="8" placeholder="验证码">
+              <input type="text" maxlength="8" placeholder="验证码" v-model="code">
             </section>
             <section class="login_hint">
               温馨提示：未注册硅谷外卖帐号的手机号，登录时将自动注册，且代表已同意
@@ -30,17 +30,18 @@
           <div :class="{on: !loginWay}">
             <section>
               <section class="login_message">
-                <input type="tel" maxlength="11" placeholder="手机/邮箱/用户名">
+                <input type="text" maxlength="11" placeholder="手机/邮箱/用户名" v-model="name">
               </section>
               <section class="login_verification">
-                <input type="tel" maxlength="8" placeholder="密码">
-                <div class="switch_button off">
-                  <div class="switch_circle"></div>
-                  <span class="switch_text">...</span>
+                <input type="text" maxlength="8" placeholder="密码" v-if="showPwd" v-model="pwd">
+                <input type="password" maxlength="8" placeholder="密码" v-else v-model="pwd">
+                <div class="switch_button off" :class="showPwd?'on':'off'" @click="showPwd = !showPwd">
+                  <div class="switch_circle" :class="{right:showPwd}"></div>
+                  <span class="switch_text">{{showPwd?'abc':'...'}}</span>
                 </div>
               </section>
               <section class="login_message">
-                <input type="text" maxlength="11" placeholder="验证码">
+                <input type="text" maxlength="11" placeholder="验证码" v-model="captcha">
                 <img class="get_verification" src="./images/captcha.svg" alt="captcha">
               </section>
             </section>
@@ -53,17 +54,26 @@
         <i class="iconfont icon-qiehuanqizuo"></i>
       </a>
     </div>
+    <AlertTip :alertText="alertText" v-show="alertShow" @closeTip="closeAlert"/>
   </section>
 </template>
 
 <script>
+  import AlertTip from '../../components/AlertTip/AlertTip'
   export default {
     name: "Login",
     data(){
       return {
         loginWay:true, //true短信登录，false密码登录
         phone: '', //手机号
+        code: '',//短信验证码
         computeTime: 0, //计时剩余时间
+        showPwd:false, //false隐藏密码，true显示密码
+        name: '', //账号
+        pwd: '', //密码
+        captcha: '', //图形验证码
+        alertText: '', //提示文本
+        alertShow: false, //显示提示文本
       }
     },
     computed: {
@@ -85,7 +95,40 @@
           }, 1000)
           //发送ajax请求（向指定手机号发送验证码短信）
         }
+      },
+      showAlert(alertText){
+        this.alertText = alertText
+        this.alertShow = true
+      },
+      closeAlert(){
+        this.alertText = ''
+        this.alertShow = false
+      },
+      //异步登录
+      login(){
+        //前台表单验证
+        if(this.loginWay){
+          //短信登录
+          const {rightPhone, code} = this
+          if(!rightPhone){
+            this.showAlert('手机号码不正确')
+          }else if(!/^\d{6}$/.test(code)){
+            this.showAlert('验证必须是6位数字')
+          }
+        }else{
+          const {name, pwd, captcha} = this
+          if(!name){
+            this.showAlert('账号必填')
+          }else if(!pwd){
+            this.showAlert('密码必填')
+          }else if(!captcha){
+            this.showAlert('验证码必填')
+          }
+        }
       }
+    },
+    components: {
+      AlertTip
     }
   }
 </script>
@@ -192,6 +235,8 @@
                   background #fff
                   box-shadow 0 2px 4px 0 rgba(0,0,0,.1)
                   transition transform .3s
+                  &.right
+                    transform translateX(35px)
             .login_hint
               margin-top 12px
               color #999
