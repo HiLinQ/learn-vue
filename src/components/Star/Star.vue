@@ -1,20 +1,44 @@
 <template>
-  <div class="star star-24">
-    <span class="star-item on"></span>
-    <span class="star-item on"></span>
-    <span class="star-item on"></span>
-    <span class="star-item half"></span>
-    <span class="star-item off"></span>
+  <div class="star" :class="'star-' + size">
+    <span class="star-item" v-for="(sc, index) in starClasses" :class="sc" :key="index"></span>
   </div>
 </template>
 
 <script>
-    export default {
-        name: "Star"
+  const CLASS_ON = 'on'
+  const CLASS_HALF = 'half'
+  const CLASS_OFF = 'off'
+  export default {
+    name: "Star",
+    props: {
+      score: Number,
+      size: Number,
+    },
+    computed: {
+      starClasses(){
+        const {score} = this
+        const scs = []
+        //向scs中添加n个CLASS_ON
+        const scoreInteger = Math.floor(score)
+        for (let i = 0; i < scoreInteger; i++){
+          scs.push(CLASS_ON)
+        }
+        //向scs中添加0或1个CLASS_HALF  小数计算不精确，所以乘以10对比
+        if(score*10 - scoreInteger*10 >= 5){
+          scs.push(CLASS_HALF)
+        }
+        //向scs中添加n个CLASS_OFF
+        while (scs.length < 5){
+          scs.push(CLASS_OFF)
+        }
+        return scs
+      }
     }
+  }
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/mixins.styl"
   .star //2x图 3x图
     float left
     font-size 0
@@ -30,11 +54,11 @@
         &:last-child
           margin-right: 0
         &.on
-          bg-image('./images/stars/star48_on')
+          bg-image('./images/star48_on')
         &.half
-          bg-image('./images/stars/star48_half')
+          bg-image('./images/star48_half')
         &.off
-          bg-image('./images/stars/star48_off')
+          bg-image('./images/star48_off')
     &.star-36
       .star-item
         width 15px
@@ -44,11 +68,11 @@
         &:last-child
           margin-right 0
         &.on
-          bg-image('./images/stars/star36_on')
+          bg-image('./images/star36_on')
         &.half
-          bg-image('./images/stars/star36_half')
+          bg-image('./images/star36_half')
         &.off
-          bg-image('./images/stars/star36_off')
+          bg-image('./images/star36_off')
     &.star-24
       .star-item
         width 10px
@@ -58,9 +82,9 @@
         &:last-child
           margin-right 0
         &.on
-          bg-image('./images/stars/star24_on')
+          bg-image('./images/star24_on')
         &.half
-          bg-image('./images/stars/star24_half')
+          bg-image('./images/star24_half')
         &.off
-          bg-image('./images/stars/star24_off')
+          bg-image('./images/star24_off')
 </style>

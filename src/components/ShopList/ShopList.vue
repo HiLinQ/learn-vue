@@ -15,6 +15,7 @@
             </section>
             <section class="shop_rating_order">
               <section class="shop_rating_order_left">
+                <Star :score="shop.rating" :size="24" />
                 <div class="rating_section">
                   {{shop.rating}}
                 </div>
@@ -47,6 +48,7 @@
 
 <script>
   import {mapState} from 'vuex'
+  import Star from '../Star/Star' //引入star组件
   export default {
     name: "ShopList",
     data() {
@@ -56,6 +58,9 @@
     },
     computed: {
       ...mapState(['shops'])
+    },
+    components: {
+      Star //映射为标签
     }
   }
 </script>
