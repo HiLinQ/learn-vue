@@ -12,10 +12,11 @@
   export default {
     mounted (){
       // this.$store.dispatch('getAddress') //方法一 直接使用
-      this.getAddress() //方法二 通过映射方法更新vuex状态
+      this.getAddress() //方法二 通过映射方法更新vuex状态  初始化执行一次
+      this.getUserInfo()//初始化执行一次
     },
     methods: {
-      ...mapActions(['getAddress']), //获取地址是全局的所以放在APP里面直接操作
+      ...mapActions(['getAddress', 'getUserInfo']), //获取地址是全局的所以放在APP里面直接操作
     },
     components: {FooterGuide}
   }

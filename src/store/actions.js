@@ -4,13 +4,15 @@
 import {
   RECEIVE_ADDRESS,
   RECEIVE_CATEGORIES,
-  RECEIVE_SHOPS
+  RECEIVE_SHOPS,
+  RECEIVE_USERINFO
 } from './mutation-types'
 
 import {
   reqAddress,
   reqFoodCategories,
-  reqShops
+  reqShops,
+  reqUserinfo
 } from '../api/index'
 
 export default {
@@ -46,4 +48,16 @@ export default {
       commit(RECEIVE_SHOPS, {shops})
     }
   },
+  //同步获取用户信息
+  recordUser({commit}, userInfo){
+    commit(RECEIVE_USERINFO, {userInfo})
+  },
+  //异步获取用户信息
+  async getUserInfo({commit}){
+    const result = await reqUserinfo()
+    if(result.code === 0){
+      const userInfo = result.data
+      commit(RECEIVE_USERINFO, {userInfo})
+    }
+  }
 }

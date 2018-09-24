@@ -4,5 +4,6 @@
 export const RECEIVE_ADDRESS = 'receive_address' // 重新赋值state.address
 export const RECEIVE_CATEGORIES = 'receive_categories' // 重新赋值state.categories
 export const RECEIVE_SHOPS = 'receive_shops' // 重新赋值state.shops
+export const RECEIVE_USERINFO = 'receive_userInfo' // 重新赋值state.userInfo
 
 

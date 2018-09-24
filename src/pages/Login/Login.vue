@@ -42,7 +42,10 @@
               </section>
               <section class="login_message">
                 <input type="text" maxlength="11" placeholder="验证码" v-model="captcha">
-                <img class="get_verification" src="./images/captcha.svg" alt="captcha">
+                <img class="get_verification" src="http://localhost:4000/captcha" alt="captcha"
+                     @click="getCaptcha"
+                     ref="captcha"
+                >
               </section>
             </section>
           </div>
@@ -60,6 +63,7 @@
 
 <script>
   import AlertTip from '../../components/AlertTip/AlertTip'
+  import {reqSendCode, reqSmsLogin, reqPwdLogin} from '../../api'
   export default {
     name: "Login",
     data(){
@@ -82,18 +86,27 @@
       }
     },
     methods: {
-      getCode(){
+      async getCode(){
         if(!this.computeTime){
           //启动倒计时
           this.computeTime = 30
-          const intervalId = setInterval(() => {
+          this.intervalId = setInterval(() => {
             this.computeTime--
             if(this.computeTime == 0){
               //停止计时
-              clearInterval(intervalId)
+              clearInterval(this.intervalId)
             }
           }, 1000)
           //发送ajax请求（向指定手机号发送验证码短信）
+          const result = await reqSendCode(this.phone) //用了async和await，就可以将异步的接口按同步的方式处理，串行编写业务
+          if(result.code === 1){
+            this.showAlert(result.msg)
+            //清除倒计时效果
+            if(this.computeTime){
+              clearInterval(this.intervalId)
+              this.computeTime = 0;
+            }
+          }
         }
       },
       showAlert(alertText){
@@ -104,26 +117,59 @@
         this.alertText = ''
         this.alertShow = false
       },
+      getCaptcha(){
+        //每次指定的src要不一样才能刷新
+        this.$refs.captcha.src = 'http://localhost:4000/captcha?time=' + Date.now();
+        //因为不是ajax请求，所以不存在跨域问题
+      },
       //异步登录
-      login(){
+      async login(){
+        let result //要注意let，const，var的不同使用方式 es6开始有块级作用域的概念
         //前台表单验证
         if(this.loginWay){
           //短信登录
-          const {rightPhone, code} = this
+          const {phone, rightPhone, code} = this
           if(!rightPhone){
             this.showAlert('手机号码不正确')
+            return
           }else if(!/^\d{6}$/.test(code)){
             this.showAlert('验证必须是6位数字')
+            return
           }
+          //发送ajax请求登录
+          result = await reqSmsLogin(phone, code)
         }else{
           const {name, pwd, captcha} = this
           if(!name){
             this.showAlert('账号必填')
+            return
           }else if(!pwd){
             this.showAlert('密码必填')
+            return
           }else if(!captcha){
             this.showAlert('验证码必填')
+            return
           }
+          //发送ajax请求登录
+          result = await reqPwdLogin({name, pwd, captcha})
+        }
+        //清除倒计时效果
+        if(this.computeTime){
+          clearInterval(this.intervalId)
+          this.computeTime = 0;
+        }
+
+        if(result.code === 0){
+          const user = result.data
+          //将user保存到vuex的state，因为user数据已经拿到仅需要保存而已，所以用同步方法记录一下即可
+          this.$store.dispatch('recordUser', user);
+          //去个人中心界面
+          this.$router.replace('/profile')  //回退的时候不需要返回这个界面用replace，如果需要则用push
+        }else{
+          const msg = result.msg
+          this.showAlert(msg)
+          this.getCaptcha()
+          return
         }
       }
     },
